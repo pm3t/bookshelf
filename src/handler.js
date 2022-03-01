@@ -58,7 +58,7 @@ const addbookHandler = (request, h) => {
 const getAllbooksHandler = (request,h) => {
   const response = h.response({
     status: 'success',
-    data: { books },
+    data: { books},
   });
   response.code(200);
   return response;
