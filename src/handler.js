@@ -12,7 +12,7 @@ const addbookHandler = (request, h) => {
 
     response.code(400);
     return response;
-  }
+  };
   if (readPage >= pageCount) {
     const response = h.response({
       status: 'fail',
@@ -21,7 +21,7 @@ const addbookHandler = (request, h) => {
 
     response.code(400);
     return response;
-  }
+  };
 
 
   const id = nanoid(16);
@@ -65,8 +65,8 @@ const getAllbooksHandler = (request,h) => {
 };
 
 const getbookByIdHandler = (request,h) => {
-  const {id} = request.params;
-  const book = books.filter((n)=>n.id===id)[0];
+  const {bookid} = request.params;
+  const book = books.filter((n)=>n.id===bookid)[0];
 
   if(book!==undefined){
     const response = h.response({
@@ -80,7 +80,7 @@ const getbookByIdHandler = (request,h) => {
   else{
     const response = h.response({
       status: 'fail',
-      message:'book tidak ditemukan',
+      message:'Buku tidak ditemukan',
     });
     response.code(404);
     return response;
@@ -90,29 +90,47 @@ const getbookByIdHandler = (request,h) => {
 };
 
 const editbookByIdHandler = (request,h) => {
-  const {id} = request.params;
-  const {title,tags,body} = request.payload;
+  const {bookid} = request.params;
+  const {name,year,author,summary,publisher,pageCount,readPage,finished, reading} = request.payload;
+
+  //checkinput
+  if (name === undefined) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal memperbarui buku. Mohon isi nama buku',
+      });
+
+    response.code(400);
+    return response;
+  };
+  if (readPage >= pageCount) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount',
+    });
+
+    response.code(400);
+    return response;
+  };
+
   const updatedAt = new Date().toISOString();
-  const index = books.findIndex((n)=> n.id===id);
+  const index = books.findIndex((n)=> n.id===bookid);
   
   if(index!==-1){
     books[index] = {
       ...books[index],
-      title,
-      tags,
-      body,
-      updatedAt
+      name,year,author,summary,publisher,pageCount,readPage,finished, reading,updatedAt
     };
     const response = h.response({
       status : 'success',
-      message:'catatan berhasil diperbaharui'
+      message:'buku berhasil diperbaharui'
     });
     response.code(200)
     return response;
   }else{
     const response = h.response({
       status : 'fail',
-      message:'gagal memperbaharui catatan. Id tidak ditemukan'
+      message:'gagal memperbaharui buku. Id tidak ditemukan'
     });
     response.code(404)
     return response;
@@ -120,22 +138,22 @@ const editbookByIdHandler = (request,h) => {
 };
 
 const deletebookByIdHandler = (request,h) => {
-  const {id} = request.params;
-  const index = books.findIndex((n)=> n.id===id);
+  const {bookid} = request.params;
+  const index = books.findIndex((n)=> n.id===bookid);
 
   if(index!==-1){
    
     books.splice(index,1);
     const response = h.response({
       status : 'success',
-      message:'catatan berhasil dihapus'
+      message:'buku berhasil dihapus'
     });
     response.code(200)
     return response;
   }else{
     const response = h.response({
       status : 'fail',
-      message:'gagal memperbaharui catatan. Id tidak ditemukan'
+      message:'Buku gagal dihapus. Id tidak ditemukan'
     });
     response.code(404)
     return response;
