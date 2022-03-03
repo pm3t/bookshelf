@@ -1,8 +1,9 @@
+const { query } = require('@hapi/hapi/lib/validation');
 const { nanoid } = require('nanoid');
 const books = require('./books');
 
 const addbookHandler = (request, h) => {
-  const { name,year,author,summary,publisher,pageCount,readPage,finished, reading } = request.payload;
+  const { name,year,author,summary,publisher,pageCount,readPage, reading } = request.payload;
   
   if (name === undefined) {
     const response = h.response({
@@ -25,11 +26,12 @@ const addbookHandler = (request, h) => {
 
 
   const id = nanoid(16);
-  const createdAt = new Date().toISOString();
-  const updatedAt = createdAt;
+  const insertedAt = new Date().toISOString();
+  const updatedAt = insertedAt;
+  const finished = (pageCount === readPage);
 
   const newbook = {
-    name,year,author,summary,publisher,pageCount,readPage,finished, reading, id, createdAt, updatedAt,
+    name,year,author,summary,publisher,pageCount,readPage,finished, reading, id, insertedAt, updatedAt,
   };
   books.push(newbook);
 
@@ -56,12 +58,22 @@ const addbookHandler = (request, h) => {
 
 
 const getAllbooksHandler = (request,h) => {
-  const response = h.response({
+  
+    const response = h.response({
     status: 'success',
-    data: { books},
-  });
-  response.code(200);
-  return response;
+      data: {
+        books:books.map((b)=>{
+          const container = {};
+          container.id = b.id;
+          container.name = b.name;
+          container.publisher = b.publisher;
+          return container;
+        })
+      },
+    });
+    response.code(200);
+    return response;  
+  
 };
 
 const getbookByIdHandler = (request,h) => {
@@ -91,7 +103,7 @@ const getbookByIdHandler = (request,h) => {
 
 const editbookByIdHandler = (request,h) => {
   const {bookid} = request.params;
-  const {name,year,author,summary,publisher,pageCount,readPage,finished, reading} = request.payload;
+  const {name,year,author,summary,publisher,pageCount,readPage,reading} = request.payload;
 
   //checkinput
   if (name === undefined) {
@@ -114,6 +126,7 @@ const editbookByIdHandler = (request,h) => {
   };
 
   const updatedAt = new Date().toISOString();
+  const finished = (pageCount === readPage);
   const index = books.findIndex((n)=> n.id===bookid);
   
   if(index!==-1){
@@ -123,14 +136,14 @@ const editbookByIdHandler = (request,h) => {
     };
     const response = h.response({
       status : 'success',
-      message:'buku berhasil diperbaharui'
+      message:'Buku berhasil diperbarui'
     });
     response.code(200)
     return response;
   }else{
     const response = h.response({
       status : 'fail',
-      message:'gagal memperbaharui buku. Id tidak ditemukan'
+      message:'Gagal memperbarui buku. Id tidak ditemukan'
     });
     response.code(404)
     return response;
@@ -146,7 +159,7 @@ const deletebookByIdHandler = (request,h) => {
     books.splice(index,1);
     const response = h.response({
       status : 'success',
-      message:'buku berhasil dihapus'
+      message:'Buku berhasil dihapus'
     });
     response.code(200)
     return response;
